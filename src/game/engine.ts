@@ -68,8 +68,9 @@ function owe(state: GameState, amount: number, reason: string, creditorId?: stri
   if (amount <= 0) return
   if (player.balance >= amount) {
     player.balance -= amount
-    if (creditorId) state.players.find(item => item.id === creditorId)!.balance += amount
-    addLog(state, `${player.name} pagou R$ ${amount} ${reason}.`)
+    const creditor = creditorId ? state.players.find(item => item.id === creditorId) : undefined
+    if (creditor) creditor.balance += amount
+    addLog(state, `${player.name} pagou R$ ${amount} ${reason}${creditor ? ` para ${creditor.name}` : ''}.`)
   } else {
     state.debt = { amount, creditorId, reason }
     state.phase = 'DEBT'
@@ -414,8 +415,9 @@ export function settleDebt(state: GameState) {
   const next = copy(state)
   const player = currentPlayer(next)
   player.balance -= next.debt!.amount
-  if (next.debt!.creditorId) next.players.find(item => item.id === next.debt!.creditorId)!.balance += next.debt!.amount
-  addLog(next, `${player.name} quitou a dívida de R$ ${next.debt!.amount}.`)
+  const creditor = next.debt!.creditorId ? next.players.find(item => item.id === next.debt!.creditorId) : undefined
+  if (creditor) creditor.balance += next.debt!.amount
+  addLog(next, `${player.name} quitou a dívida de R$ ${next.debt!.amount}${creditor ? ` com ${creditor.name}` : ''}.`)
   next.debt = undefined
   next.phase = next.extraTurn ? 'ROLL' : 'END'
   return next

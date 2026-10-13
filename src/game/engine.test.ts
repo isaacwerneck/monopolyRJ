@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { auctionBid, auctionPass, build, buyFromPlayer, buyProperty, createGame, declareBankruptcy, declineProperty, rentFor, rollDice, startAuction, takeoverPrice, toggleMortgage, trade } from './engine'
+import { auctionBid, auctionPass, build, buyFromPlayer, buyProperty, createGame, declareBankruptcy, declineProperty, rentFor, rollDice, settleDebt, startAuction, takeoverPrice, toggleMortgage, trade } from './engine'
 
 describe('motor do Rio', () => {
   it('move, paga a volta e oferece uma propriedade', () => {
@@ -33,6 +33,23 @@ describe('motor do Rio', () => {
     expect(game.players[0].balance).toBe(1496)
     expect(game.players[1].balance).toBe(1504)
     expect(game.log[0]).toContain('pagou R$ 4 de aluguel')
+    expect(game.log[0]).toContain('para Beto')
+  })
+
+  it('transfere o aluguel ao proprietário depois de quitar uma dívida', () => {
+    let game = createGame(['Ana', 'Beto'])
+    game.players[0].balance = 100
+    game.properties[3] = { ownerId: 'p2', houses: 3, mortgaged: false }
+    game.players[1].owned = [3]
+    game.players[0].position = 1
+    game = rollDice(game, [1, 1])
+    expect(game.phase).toBe('DEBT')
+    expect(game.players[1].balance).toBe(1500)
+    game.players[0].balance = 180
+    game = settleDebt(game)
+    expect(game.players[0].balance).toBe(0)
+    expect(game.players[1].balance).toBe(1680)
+    expect(game.log[0]).toContain('com Beto')
   })
 
   it('cobra o aluguel maior correspondente às casas construídas', () => {

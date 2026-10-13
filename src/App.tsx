@@ -29,6 +29,7 @@ export default function App() {
   const previousLog = useRef('')
   const ownedCardsRef = useRef<HTMLDivElement | null>(null)
   const saved = useMemo(() => localStorage.getItem(SAVE_KEY), [])
+  const balanceSignature = game?.players.map(item => `${item.id}:${item.balance}`).join('|') || ''
 
   useEffect(() => { if (game && !lobby) localStorage.setItem(SAVE_KEY, JSON.stringify(game)) }, [game, lobby])
   useEffect(() => { if (game) window.scrollTo({ top: 0, left: 0 }) }, [Boolean(game)])
@@ -48,7 +49,7 @@ export default function App() {
     setMoneyChanges(changes)
     const timeout = window.setTimeout(() => setMoneyChanges({}), 1800)
     return () => window.clearTimeout(timeout)
-  }, [game])
+  }, [balanceSignature])
   useEffect(() => {
     if (!game?.log[0]) { previousLog.current = ''; setActionFeedback(null); return }
     const signature = game.log.slice(0, 3).join('\n')
